@@ -25,7 +25,7 @@ type Result struct {
 	Tags []string
 }
 
-const MAXWORKERS = 20
+const MAXWORKERS = 80
 
 func Populate(method func(payload interface{}) interface{}, workersNumber int, tasks []Song)  {
 	if workersNumber > MAXWORKERS {
@@ -84,8 +84,11 @@ func main() {
 
 	allSongs := ReadCsvFile(*inputFile)
 
-	fmt.Printf("Gonna load songs from %d to %d of %d songs\n", *songsFrom, *songsTo, len(allSongs))
-	songs := allSongs[*songsFrom:*songsTo]
+	var songsFromValue = *songsFrom
+	var songsToValue = *songsTo
+
+	fmt.Printf("Gonna load songs from %d to %d of %d songs\n", songsFromValue, songsToValue, len(allSongs))
+	songs := allSongs[songsFromValue:songsToValue]
 
 	ch := make(chan Result, len(songs))
 
@@ -113,7 +116,8 @@ func main() {
 	}, *workers, songs)
 
 	results := []Result{}
-	for i := 0; i < len(songs); i++ {
+	channelSize := len(ch)
+	for i := 0; i < channelSize; i++ {
 		results = append(results, <-ch)
 	}
 
